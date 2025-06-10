@@ -1,0 +1,30 @@
+# === Backend ===
+.env
+.venv
+
+# === Frontend ===
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Node modules and build output
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# === Общие IDE/OS файлы ===
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
