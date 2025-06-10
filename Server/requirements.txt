@@ -7,3 +7,4 @@ python-dotenv
 geoalchemy2
 shapely
 pydantic-settings
+geopandas
