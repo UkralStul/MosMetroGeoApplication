@@ -1,8 +1,8 @@
 from core.models import Station
-from ..schemas import StationCreateAPI, StationUpdate
+from ..schemas import StationCreate, StationUpdate
 from .base import BaseCRUD
 
-class CRUDStation(BaseCRUD[Station, StationCreateAPI, StationUpdate]):
+class CRUDStation(BaseCRUD[Station, StationCreate, StationUpdate]):
     pass
 
 crud_station = CRUDStation(Station)

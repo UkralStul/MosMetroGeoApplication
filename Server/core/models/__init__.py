@@ -4,6 +4,7 @@ from .BusTramStop import BusTramStop
 from .District import District
 from .Station import Station
 from .base import Base
+from .CustomObject import CustomObject
 
 __all__ = (
     "db_helper",
@@ -13,4 +14,5 @@ __all__ = (
     "District",
     "Station",
     "Street",
+    "CustomObject",
 )

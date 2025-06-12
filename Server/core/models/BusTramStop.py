@@ -14,7 +14,6 @@ class BusTramStop(Base):
     ao = Column(String)
     address_mpv = Column(String)
     marshrut = Column(String)
-    icon = Column(Text, nullable=True)
     properties_data = Column(JSONB, nullable=True)
     geometry = Column(Geometry('POINT', srid=4326))
 
