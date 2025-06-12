@@ -1,0 +1,53 @@
+.formContainer {
+    display: flex;
+    position: absolute;
+    top: -185px;
+    left: -240px;
+    align-items: stretch;
+    justify-content: center;
+    flex-direction: column;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.6);
+    padding: 10px;
+    border-radius: 20px;
+    font-size: 20px;
+
+    opacity: 0;
+    transform: scale(0.95);
+
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+.show {
+    opacity: 1;
+      transform: scale(1);
+    pointer-events: auto;
+}
+
+.hide {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
+}
+
+.button {
+    border-radius: 5px;
+    background-color: #007bff;
+    border: none;
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+    font-size: 0.95em;
+    transition: background-color 0.2s ease;
+    color: white;
+}
+
+.button:hover {
+    background-color: #0056b3;
+}
+
+.button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
