@@ -1,0 +1,58 @@
+.mapContainerWrapper {
+    display: flex;
+    height: 100%;
+    width: 100%;
+}
+
+.layerTogglePanel {
+    width: 230px;
+    padding: 15px;
+    background-color: #f0f2f5;
+    border-right: 1px solid #d9d9d9;
+    overflow-y: auto;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+
+.layerTogglePanel h4 {
+    margin-top: 0;
+    margin-bottom: 15px;
+    color: #333;
+    font-size: 1.1em;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 5px;
+}
+
+.layerTogglePanel .layerItem {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+}
+
+.layerTogglePanel .layerItem input[type="checkbox"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+.layerTogglePanel .layerItem label {
+    font-size: 0.95em;
+    color: #555;
+    cursor: pointer;
+    text-transform: capitalize;
+}
+
+.map {
+    flex-grow: 1;
+    height: 100%;
+    cursor: default;
+}
+
+.mapAddingMode {
+    cursor: crosshair !important;
+}
+
+
+.custom-div-icon {
+    border: none;
+    background: transparent !important;
+}
