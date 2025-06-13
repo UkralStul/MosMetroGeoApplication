@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { MapContainer, TileLayer, GeoJSON, useMap, useMapEvents } from 'react-leaflet';
+import {MapContainer, TileLayer, GeoJSON, useMap, useMapEvents, Marker} from 'react-leaflet';
 import L, { PointExpression } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'react-leaflet-markercluster/styles';
@@ -18,10 +18,11 @@ import markerIcon from '@/assets/marker-icon.png';
 
 import { useUserObjectsStore } from '@/features/DisplayUserObjects/model/useUserObjectsStore';
 import { GeoObjectType } from '@/shared/api/objectsApi';
-import { GeoJsonFeatureCollection, GeoJsonFeature } from '@/entities/MapObject/model/types';
+import {GeoJsonFeatureCollection, GeoJsonFeature, UserObject} from '@/entities/MapObject/model/types';
 import { MOSCOW_CENTER_COORDS, INITIAL_ZOOM_LEVEL } from '@/shared/config/mapConfig';
 import styles from './MapWidget.module.css';
 import { ObjectProperties } from '@/widgets/ObjectInfoSidebar/ObjectInfoSidebar';
+import MarkerClusterGroup from "react-leaflet-markercluster";
 // Fix для иконок Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -209,32 +210,55 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const combinedLayersData = useMemo(() => {
-        const combined: Record<string, GeoJsonFeatureCollection> = {};
+    const { layersToRender, customObjectsToRender } = useMemo(() => {
+        const layers: Record<string, GeoJsonFeatureCollection> = {};
+        let customObjects: UserObject[] = [];
+
         const allLayerKeys: GeoObjectType[] = ['bus_stops', 'districts', 'stations', 'streets', 'custom_objects'];
+
         for (const key of allLayerKeys) {
+            // Если это кастомные объекты, просто сохраняем их массив и идем дальше
+            if (key === 'custom_objects') {
+                customObjects = objectsByType[key] || [];
+                continue;
+            }
+
+            // Для всех остальных слоев делаем объединение, как и раньше
             const staticData = staticLayersData[key];
             const dynamicData = objectsByType[key];
 
             const dynamicFeatures: GeoJsonFeature[] = (dynamicData || []).map(obj => ({
-                type: "Feature",
-                geometry: obj.geometry,
-                properties: obj,
+                type: "Feature", geometry: obj.geometry, properties: obj,
             }));
 
             const allFeatures = [...(staticData?.features || []), ...dynamicFeatures];
 
             if (allFeatures.length > 0) {
-                combined[key] = {
-                    type: "FeatureCollection",
-                    features: allFeatures
-                };
+                layers[key] = { type: "FeatureCollection", features: allFeatures };
             }
         }
-        return combined;
+        return { layersToRender: layers, customObjectsToRender: customObjects };
     }, [staticLayersData, objectsByType]);
 
-    // 4. ЛОГИКА ОТОБРАЖЕНИЯ
+    const customObjectMarkers = useMemo(() => {
+        return customObjectsToRender.map((obj) => (
+            <Marker
+                key={`custom-${obj.id}`}
+                position={[obj.geometry.coordinates[1], obj.geometry.coordinates[0]]}
+                // Можно использовать стандартную иконку или кастомную
+                icon={L.icon({ iconUrl: iconUrl, iconSize: [25, 41], iconAnchor: [12, 41] })}
+                eventHandlers={{
+                    click: () => {
+                        onFeatureClick(obj as ObjectProperties);
+                    }
+                }}
+            >
+                {/* Вместо Popup мы используем сайдбар, но можно оставить для отладки */}
+                {/* <Popup>{obj.name}</Popup> */}
+            </Marker>
+        ));
+    }, [customObjectsToRender, onFeatureClick]);
+
     const toggleLayer = (layerName: string) => {
         setActiveLayers(prev => ({ ...prev, [layerName]: !prev[layerName] }));
     };
@@ -329,18 +353,23 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
 
 
 
-                {/* Рендерим объединенные данные через наш универсальный компонент */}
-                {Object.entries(combinedLayersData).map(([layerKey, data]) => {
-                    return (
-                        <StaticLayerDisplay
-                            key={`${layerKey}-${updateCounter}`}
-                            data={data}
-                            layerNameKey={layerKey}
-                            isVisible={isLayerVisibleAtCurrentZoom(layerKey)}
-                            onFeatureClick={onFeatureClick}
-                        />
-                    );
-                })}
+                {/* 1. Рендерим слои (остановки, районы, улицы, станции) */}
+                {Object.entries(layersToRender).map(([layerKey, data]) => (
+                    <StaticLayerDisplay
+                        key={`${layerKey}-${updateCounter}`}
+                        data={data}
+                        layerNameKey={layerKey}
+                        isVisible={isLayerVisibleAtCurrentZoom(layerKey)}
+                        onFeatureClick={onFeatureClick}
+                    />
+                ))}
+
+                {/* 2. Рендерим кастомные объекты с кластеризацией */}
+                {isLayerVisibleAtCurrentZoom('custom_objects') && customObjectMarkers.length > 0 && (
+                    <MarkerClusterGroup>
+                        {customObjectMarkers}
+                    </MarkerClusterGroup>
+                )}
             </MapContainer>
         </div>
     );
