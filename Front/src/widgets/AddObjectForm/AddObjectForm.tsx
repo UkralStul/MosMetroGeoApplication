@@ -102,7 +102,7 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
         };
 
         if (initialType === 'stations') {
-            payload.type = stationType;
+            (payload as any).type = stationType;
         }
 
         if ('id' in payload && typeof payload.id === 'string') {
