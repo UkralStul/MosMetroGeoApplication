@@ -1,0 +1,82 @@
+.sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 300px;
+    height: 100%;
+    background-color: #fff;
+    box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
+    z-index: 1002; /* Выше, чем панель слоев */
+    display: flex;
+    flex-direction: column;
+    transform: translateX(-100%); /* Изначально скрыт за пределами экрана */
+    transition: transform 0.3s ease-in-out;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease-in-out;
+
+}
+
+/* Анимация появления */
+.sidebar.show {
+    transform: translateX(0);
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    background-color: #f7f7f7;
+}
+
+.header h3 {
+    margin: 0;
+    font-size: 18px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.closeButton {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #888;
+    padding: 0 5px;
+}
+
+.closeButton:hover {
+    color: #333;
+}
+
+.content {
+    padding: 20px;
+    overflow-y: auto;
+    flex-grow: 1;
+}
+
+.content table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.content td {
+    padding: 8px 4px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+}
+
+.key {
+    font-weight: bold;
+    color: #555;
+    text-transform: capitalize;
+    width: 40%;
+    vertical-align: top;
+}
+
+.value {
+    color: #333;
+    word-break: break-word;
+}

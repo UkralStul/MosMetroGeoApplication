@@ -23,8 +23,6 @@ const FIELD_LABELS: Record<string, string> = {
     name_ao: 'Название округа',
     name_station: 'Название станции',
     name_line: 'Линия',
-    station_type: 'Тип станции',
-    id: 'ID (EdgeId)',
     st_name: 'Название улицы',
     road_categ: 'Категория дороги',
     description: 'Описание',
@@ -41,7 +39,6 @@ interface AddObjectFormProps {
 const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initialCoordinates, initialType }) => {
     const [formData, setFormData] = useState<Record<string, any>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [selectedType, setSelectedType] = useState<GeoObjectType>(initialType);
     const [stationType, setStationType] = useState<'М' | 'Наземная'>('М');
 
 
@@ -51,7 +48,7 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
 
     useEffect(() => {
         setFormData({});
-        setStationType('М'); // Сбрасываем на значение по умолчанию
+        setStationType('М');
     }, [initialType]);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -120,7 +117,7 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
         }
 
         try {
-            await onSubmit(selectedType, payload);
+            await onSubmit(initialType, payload);
         } catch (error) {
             console.error("Error submitting form:", error);
         } finally {
@@ -128,7 +125,18 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
         }
     };
 
-    const currentFields = OBJECT_FIELDS[selectedType];
+    const fieldsToRender = OBJECT_FIELDS[initialType].filter(field => {
+        if (initialType === 'stations' && field === 'station_type') {
+            return false;
+        }
+
+        if (initialType === 'streets' && field === 'id') {
+            return false;
+        }
+
+        return true;
+    });
+
 
     return (
         <div className={styles.formOverlay}>
@@ -163,8 +171,7 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
                     </div>
                 )}
 
-                {/* Динамическая генерация полей */}
-                {currentFields.map(field => (
+                {fieldsToRender.map(field => (
                     <div className={styles.formGroup} key={field}>
                         <label htmlFor={`field-${field}`}>{FIELD_LABELS[field] || field}:</label>
                         <input

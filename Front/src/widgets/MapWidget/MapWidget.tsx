@@ -12,13 +12,16 @@ import shadowUrl from 'leaflet/dist/images/marker-shadow.png';
 import busStopIcon from '@/assets/bus-stop.png';
 import metroIcon from '@/assets/metro-station.png';
 import locomotiveIcon from '@/assets/locomotive.png';
+import districtIcon from '@/assets/district-icon.png';
+import streetIcon from '@/assets/street-icon.png';
+import markerIcon from '@/assets/marker-icon.png';
 
 import { useUserObjectsStore } from '@/features/DisplayUserObjects/model/useUserObjectsStore';
 import { GeoObjectType } from '@/shared/api/objectsApi';
 import { GeoJsonFeatureCollection, GeoJsonFeature } from '@/entities/MapObject/model/types';
 import { MOSCOW_CENTER_COORDS, INITIAL_ZOOM_LEVEL } from '@/shared/config/mapConfig';
 import styles from './MapWidget.module.css';
-
+import { ObjectProperties } from '@/widgets/ObjectInfoSidebar/ObjectInfoSidebar';
 // Fix для иконок Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
@@ -27,12 +30,27 @@ L.Icon.Default.mergeOptions({
     shadowUrl,
 });
 
-
+const layerInfo = {
+    districts: { iconSrc: districtIcon, label: 'Районы' },
+    bus_stops: { iconSrc: busStopIcon, label: 'Остановки' },
+    stations: { iconSrc: locomotiveIcon, label: 'Станции' },
+    streets: { iconSrc: streetIcon, label: 'Улицы' },
+    custom_objects: { iconSrc: markerIcon, label: 'Мои Объекты' },
+};
+type LayerInfoKey = keyof typeof layerInfo;
 
 interface MapWidgetProps {
     onMapClick: (latlng: L.LatLng) => void;
     isAddingMode: boolean;
     selectedCoords: { lat: number; lng: number }[];
+    onFeatureClick: (properties: ObjectProperties) => void;
+}
+
+interface StaticLayerDisplayProps {
+    data: GeoJsonFeatureCollection | null;
+    layerNameKey: string;
+    isVisible: boolean;
+    onFeatureClick: (properties: ObjectProperties) => void;
 }
 
 // Вспомогательный компонент для обработки кликов на карте и изменения курсора
@@ -63,11 +81,7 @@ const MapEventsHandler: React.FC<{
 };
 
 
-const StaticLayerDisplay: React.FC<{
-    data: GeoJsonFeatureCollection | null;
-    layerNameKey: string;
-    isVisible: boolean;
-}> = React.memo(({ data, layerNameKey, isVisible }) => {
+const StaticLayerDisplay: React.FC<StaticLayerDisplayProps> = React.memo(({ data, layerNameKey, isVisible, onFeatureClick }) => {
     if (!data || !isVisible) return null;
 
     const getStyle = (feature?: GeoJsonFeature) => {
@@ -80,27 +94,13 @@ const StaticLayerDisplay: React.FC<{
     };
 
     const onEachFeature = (feature: GeoJsonFeature, layer: L.Layer) => {
-        let popupContent = "Информация недоступна";
         if (feature.properties) {
-            switch (layerNameKey) {
-                case 'bus_stops':
-                    popupContent = `<b>Остановка:</b> ${feature.properties.name_mpv || 'Без имени'}<br/>Маршруты: ${feature.properties.marshrut}`;
-                    break;
-                case 'districts':
-                    popupContent = `<b>${feature.properties.name || 'Район без имени'}</b><br/>Округ: ${feature.properties.name_ao}`;
-                    break;
-                case 'stations':
-                    popupContent = `<b>Станция:</b> ${feature.properties.name_station || 'Без имени'}<br/>Линия: ${feature.properties.name_line}`;
-                    break;
-                case 'streets':
-                    popupContent = `<b>Улица:</b> ${feature.properties.st_name || 'Без имени'}`;
-                    break;
-                case 'custom_objects':
-                    popupContent = `<b>${feature.properties.name}</b><br/>Тип: ${feature.properties.object_type}<br/>${feature.properties.description}`;
-                    break;
-            }
+            layer.on({
+                click: () => {
+                    onFeatureClick(feature.properties);
+                }
+            });
         }
-        layer.bindPopup(popupContent);
     };
 
     const pointToLayer = (feature: GeoJsonFeature, latlng: L.LatLng): L.Layer => {
@@ -151,10 +151,10 @@ const LAYER_ZOOM_THRESHOLDS: Record<string, { minZoom?: number; maxZoom?: number
     bus_stops: { minZoom: 14 },
     stations: { minZoom: 12 },
     streets: { minZoom: 15 },
-    custom_objects: {minZoom: 1}, // Кастомные объекты видны всегда
+    custom_objects: {minZoom: 1},
 };
 
-const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selectedCoords }) => {
+const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selectedCoords, onFeatureClick }) => {
     const [staticLayersData, setStaticLayersData] = useState<Record<string, GeoJsonFeatureCollection | null>>({});
     const [isLoadingStatic, setIsLoadingStatic] = useState(true);
     const { objectsByType, fetchObjectsByType, isLoading: isLoadingDynamic, updateCounter } = useUserObjectsStore();
@@ -166,7 +166,6 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
 
     useEffect(() => {
         const loadAllData = async () => {
-            // 1. Загрузка статических данных
             setIsLoadingStatic(true);
             const staticLayerFileMap: Record<string, string[]> = { // Теперь значение - массив файлов
                 bus_stops: ['bus_tram_stops.geojson'],
@@ -184,7 +183,7 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
                         const response = await fetch(`/data/${fileName}`);
                         if (!response.ok) throw new Error(`Failed to load ${fileName}`);
                         const data: GeoJsonFeatureCollection = await response.json();
-                        allFeatures.push(...data.features); // Добавляем фичи из каждого файла
+                        allFeatures.push(...data.features);
                     } catch (error) {
                         console.error(`Error loading ${fileName}:`, error);
                     }
@@ -254,34 +253,41 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
     const ZoomDependentController = () => {
         const map = useMap();
         useEffect(() => {
-            setCurrentZoom(map.getZoom());
-            const handleZoomEnd = () => setCurrentZoom(map.getZoom());
+            const handleZoomEnd = () => {
+                setCurrentZoom(map.getZoom());
+            };
             map.on('zoomend', handleZoomEnd);
-            return () => { map.off('zoomend', handleZoomEnd); };
+            return () => {
+                map.off('zoomend', handleZoomEnd);
+            };
         }, [map]);
         return null;
     };
 
     return (
         <div className={styles.mapContainerWrapper}>
-            <div className={styles.layerTogglePanel}>
-                <h4>Слои карты</h4>
-                {(isLoadingStatic || Object.values(isLoadingDynamic).some(v => v)) && <p>Загрузка...</p>}
+            <div className={styles.layerControlPanel}>
+                {/* Итерируемся по нашему объекту `layerInfo` */}
+                {Object.entries(layerInfo).map(([layerKey, { iconSrc, label }]) => {
+                    const key = layerKey as LayerInfoKey;
+                    const isActive = !!activeLayers[key];
+                    const isDisabled = isLoadingStatic || isLoadingDynamic[key];
 
-                {Object.keys(combinedLayersData).map(layerKey => (
-                    <div key={layerKey} className={styles.layerItem}>
-                        <input
-                            type="checkbox"
-                            id={`layer-toggle-${layerKey}`}
-                            checked={!!activeLayers[layerKey]}
-                            onChange={() => toggleLayer(layerKey)}
-                        />
-                        <label htmlFor={`layer-toggle-${layerKey}`}>
-                            {layerKey.replace(/_/g, ' ')}
-                            {LAYER_ZOOM_THRESHOLDS[layerKey]?.minZoom && ` (z>${LAYER_ZOOM_THRESHOLDS[layerKey].minZoom! -1})`}
-                        </label>
-                    </div>
-                ))}
+                    return (
+                        <button
+                            key={key}
+                            className={`${styles.layerButton} ${isActive ? styles.active : ''}`}
+                            onClick={() => toggleLayer(key)}
+                            title={label}
+                            disabled={isDisabled}
+                        >
+                            {isDisabled
+                                ? '...'
+                                : <img src={iconSrc} alt={label} className={styles.icon} />
+                            }
+                        </button>
+                    );
+                })}
             </div>
             <MapContainer
                 center={MOSCOW_CENTER_COORDS}
@@ -321,6 +327,8 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
                     onMouseOut={() => setCursorPosition(null)}
                 />
 
+
+
                 {/* Рендерим объединенные данные через наш универсальный компонент */}
                 {Object.entries(combinedLayersData).map(([layerKey, data]) => {
                     return (
@@ -328,7 +336,8 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
                             key={`${layerKey}-${updateCounter}`}
                             data={data}
                             layerNameKey={layerKey}
-                             isVisible={isLayerVisibleAtCurrentZoom(layerKey)}
+                            isVisible={isLayerVisibleAtCurrentZoom(layerKey)}
+                            onFeatureClick={onFeatureClick}
                         />
                     );
                 })}

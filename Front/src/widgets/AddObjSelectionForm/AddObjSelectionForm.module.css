@@ -1,8 +1,8 @@
 .formContainer {
     display: flex;
     position: absolute;
-    top: -185px;
-    left: -240px;
+    top: -230px;
+    left: -260px;
     align-items: stretch;
     justify-content: center;
     flex-direction: column;

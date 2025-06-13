@@ -10,6 +10,10 @@ const AddObjSelectionForm: React.FC<AddObjSelectionFormProps> = ({ onObjSelected
     return (
         <div className={`${styles.formContainer} ${visible ? styles.show : ''}`}>
             <button
+                onClick={() => onObjSelected('custom_objects')}
+                className={styles.button}
+            >Пользовательская метка</button>
+            <button
                 onClick={() => onObjSelected('bus_stops')}
                 className={styles.button}
             >Автобусная остановка</button>
