@@ -16,7 +16,6 @@ class BaseCRUD(Generic[ModelType, CreateSchemaType, UpdateSchemaType]):
         self.model = model
 
     async def get(self, db: AsyncSession, id: Any) -> Optional[ModelType]:
-        # db.get() является наиболее эффективным способом получения по PK
         return await db.get(self.model, id)
 
     async def get_multi(

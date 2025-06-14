@@ -34,7 +34,6 @@ OBJECT_REGISTRY: Dict[str, tuple[BaseCRUD, Type[BaseModel], Type[BaseModel], Typ
 
 def get_object_services(
         object_type: str = Path(..., description="Тип объекта, например, 'bus_stops' или 'custom_objects'")):
-    """Зависимость, которая предоставляет нужные сервисы (CRUD, схемы) по типу объекта."""
     services = OBJECT_REGISTRY.get(object_type)
     if not services:
         raise HTTPException(status_code=404, detail=f"Object type '{object_type}' not found.")
@@ -49,18 +48,12 @@ async def create_geo_object(
         services: tuple = Depends(get_object_services),
         session: AsyncSession = Depends(db_helper.session_dependency),
 ):
-    """
-    Создает новый объект указанного типа.
-    Тело запроса должно соответствовать схеме создания для данного типа объекта.
-    """
     crud, _, ReadSchema, CreateSchema, _ = services
     try:
-        # Валидируем данные с помощью Pydantic-схемы
         validated_data = CreateSchema.model_validate(object_data)
     except Exception as e:
         raise HTTPException(status_code=422, detail=str(e))
 
-    # Для улиц и кастомных объектов, где ID передается вручную, проверим на существование
     if hasattr(validated_data, 'id'):
         existing = await crud.get(db=session, id=validated_data.id)
         if existing:
@@ -83,7 +76,6 @@ async def read_geo_objects(
 ):
     crud, _, ReadSchema, _, _ = services
     items = await crud.get_multi(db=session, skip=skip, limit=limit)
-    # Валидируем каждую запись для правильной сериализации
     return [ReadSchema.model_validate(item) for item in items]
 
 
