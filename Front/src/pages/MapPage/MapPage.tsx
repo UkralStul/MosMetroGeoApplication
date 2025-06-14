@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useCallback, useState} from 'react';
 import L from 'leaflet';
 import MapWidget from '@/widgets/MapWidget/MapWidget';
 import AddObjectForm from '@/widgets/AddObjectForm/AddObjectForm';
@@ -33,10 +33,10 @@ const MapPage: React.FC = () => {
         setIsAddingMode(true);
     }
 
-    const handleFeatureClick = (properties: ObjectProperties) => {
+    const handleFeatureClick = useCallback((properties: ObjectProperties) => {
         console.log("Feature clicked:", properties);
         setSelectedObjectProps(properties);
-    };
+    }, []);
 
     const handleMapClick = (latlng: L.LatLng) => {
         if (isAddingMode) {
