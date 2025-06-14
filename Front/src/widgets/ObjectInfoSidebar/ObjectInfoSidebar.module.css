@@ -6,17 +6,16 @@
     height: 100%;
     background-color: #fff;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.15);
-    z-index: 1002; /* Выше, чем панель слоев */
+    z-index: 1002;
     display: flex;
     flex-direction: column;
-    transform: translateX(-100%); /* Изначально скрыт за пределами экрана */
+    transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
     transform: translateX(-100%);
     transition: transform 0.3s ease-in-out;
 
 }
 
-/* Анимация появления */
 .sidebar.show {
     transform: translateX(0);
 }

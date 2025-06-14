@@ -168,7 +168,7 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
     useEffect(() => {
         const loadAllData = async () => {
             setIsLoadingStatic(true);
-            const staticLayerFileMap: Record<string, string[]> = { // Теперь значение - массив файлов
+            const staticLayerFileMap: Record<string, string[]> = {
                 bus_stops: ['bus_tram_stops.geojson'],
                 districts: ['districts_layer.geojson'],
                 stations: ['mcd_station.geojson', 'mck_station.geojson', 'metro_station.geojson'], // <-- ОБЪЕДИНЯЕМ ВСЕ СТАНЦИИ
@@ -200,7 +200,6 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
             setStaticLayersData(loadedData);
             setIsLoadingStatic(false);
 
-            // 2. Загрузка динамических данных (остается без изменений)
             const dynamicTypesToFetch: GeoObjectType[] = ['custom_objects', 'bus_stops', 'stations', 'districts', 'streets'];
             dynamicTypesToFetch.forEach(type => fetchObjectsByType(type));
         };
@@ -217,13 +216,11 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
         const allLayerKeys: GeoObjectType[] = ['bus_stops', 'districts', 'stations', 'streets', 'custom_objects'];
 
         for (const key of allLayerKeys) {
-            // Если это кастомные объекты, просто сохраняем их массив и идем дальше
             if (key === 'custom_objects') {
                 customObjects = objectsByType[key] || [];
                 continue;
             }
 
-            // Для всех остальных слоев делаем объединение, как и раньше
             const staticData = staticLayersData[key];
             const dynamicData = objectsByType[key];
 
@@ -253,8 +250,6 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
                     }
                 }}
             >
-                {/* Вместо Popup мы используем сайдбар, но можно оставить для отладки */}
-                {/* <Popup>{obj.name}</Popup> */}
             </Marker>
         ));
     }, [customObjectsToRender, onFeatureClick]);
@@ -353,7 +348,6 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
 
 
 
-                {/* 1. Рендерим слои (остановки, районы, улицы, станции) */}
                 {Object.entries(layersToRender).map(([layerKey, data]) => (
                     <StaticLayerDisplay
                         key={`${layerKey}-${updateCounter}`}
@@ -364,7 +358,6 @@ const MapWidget: React.FC<MapWidgetProps> = ({ onMapClick, isAddingMode, selecte
                     />
                 ))}
 
-                {/* 2. Рендерим кастомные объекты с кластеризацией */}
                 {isLayerVisibleAtCurrentZoom('custom_objects') && customObjectMarkers.length > 0 && (
                     <MarkerClusterGroup>
                         {customObjectMarkers}

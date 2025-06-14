@@ -8,7 +8,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1050; /* Выше карты и панели слоев */
+    z-index: 1050;
 }
 
 .form {
@@ -29,7 +29,7 @@
     text-align: center;
 }
 
-.formGroup { /* Используем .formGroup вместо div */
+.formGroup {
     margin-bottom: 15px;
 }
 
@@ -44,7 +44,7 @@
 .form input[type="text"],
 .form input[type="number"],
 .form textarea {
-    width: 100%; /* Занимает всю ширину родителя .formGroup */
+    width: 100%;
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
@@ -87,7 +87,7 @@
 }
 
 .buttons button[type="submit"] {
-    background-color: #28a745; /* Зеленый */
+    background-color: #28a745;
     color: white;
 }
 .buttons button[type="submit"]:hover {
@@ -95,7 +95,7 @@
 }
 
 .buttons button[type="button"] {
-    background-color: #dc3545; /* Красный */
+    background-color: #dc3545;
     color: white;
 }
 .buttons button[type="button"]:hover {

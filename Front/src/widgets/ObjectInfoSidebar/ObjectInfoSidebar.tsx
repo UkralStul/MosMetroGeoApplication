@@ -47,7 +47,6 @@ const ObjectInfoSidebar: React.FC<ObjectInfoSidebarProps> = ({ properties, onClo
         displayProperties.ST_NAME ||
         "Детали объекта";
 
-    // Фильтруем свойства, чтобы не показывать пользователю служебные поля
     const fieldsToDisplay = Object.entries(displayProperties).filter(([key]) =>
         !['fid', 'id', 'geometry', 'properties_data', 'created_at', 'updated_at', 'icon'].includes(key)
     );

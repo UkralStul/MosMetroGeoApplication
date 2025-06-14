@@ -61,21 +61,21 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
         switch (initialType) {
             case 'bus_stops':
             case 'stations':
-            case 'custom_objects': { // <-- Открывающая скобка
+            case 'custom_objects': {
                 geometryType = 'Point';
                 formattedCoordinates = [initialCoordinates[0].lng, initialCoordinates[0].lat];
                 break;
-            } // <-- Закрывающая скобка
+            }
 
-            case 'streets': { // <-- Открывающая скобка
+            case 'streets': {
                 geometryType = 'MultiLineString';
                 formattedCoordinates = [
                     initialCoordinates.map(coord => [coord.lng, coord.lat])
                 ];
                 break;
-            } // <-- Закрывающая скобка
+            }
 
-            case 'districts': { // <-- Открывающая скобка
+            case 'districts': {
                 geometryType = 'Polygon';
                 // Здесь мы объявляем новую переменную, поэтому блок обязателен
                 const polygonRing = initialCoordinates.map(coord => [coord.lng, coord.lat]);
@@ -84,9 +84,9 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
                 }
                 formattedCoordinates = [polygonRing];
                 break;
-            } // <-- Закрывающая скобка
+            }
 
-            default: { // <-- Хорошая практика - оборачивать и default
+            default: {
                 alert(`Неизвестный тип объекта для создания геометрии: ${initialType}`);
                 setIsSubmitting(false);
                 return;
@@ -179,7 +179,7 @@ const AddObjectForm: React.FC<AddObjectFormProps> = ({ onSubmit, onCancel, initi
                             id={`field-${field}`}
                             value={formData[field] || ''}
                             onChange={(e) => handleInputChange(field, e.target.value)}
-                            required={!['description', 'object_type'].includes(field)} // Пример необязательных полей
+                            required={!['description', 'object_type'].includes(field)}
                             disabled={isSubmitting}
                         />
                     </div>

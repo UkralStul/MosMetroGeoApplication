@@ -1,5 +1,3 @@
-// src/features/DisplayUserObjects/model/useUserObjectsStore.ts
-
 import { create } from 'zustand';
 import { UserObject } from '@/entities/MapObject/model/types';
 import { fetchObjects, GeoObjectType } from '@/shared/api/objectsApi';
